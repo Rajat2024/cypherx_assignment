@@ -4,7 +4,7 @@ const App = () => {
   const [tickets, setTickets] = useState([]);
   const [groupingOption, setGroupingOption] = useState('status');
   const [sortOption, setSortOption] = useState('priority');
-
+  const [finalTickets, setFinalTickets] = useState([]);
   // Fetch tickets data from the API
   useEffect(() => {
     fetch('https://tfyincvdrafxe7ut2ziwuhe5cm0xvsdu.lambda-url.ap-south-1.on.aws/ticketAndUsers')
@@ -28,7 +28,7 @@ const App = () => {
         statusGroups[status].push(ticket);
       });
   
-      groupedTickets = Object.entries(statusGroups);
+      groupedTickets = Object.entries(statusGroups); // Convert object into array of arrays
     } else if (groupingOption === 'user') {
       // Group by user
       const userGroups = {};
@@ -54,42 +54,45 @@ const App = () => {
         priorityGroups[priority].push(ticket);
       });
   
-      // Sort the groups by priority
-      groupedTickets = Object.entries(priorityGroups).sort(
-        (a, b) => parseInt(b[0]) - parseInt(a[0])
-      );
     }
-  
-    // Update the state or perform any other necessary actions with groupedTickets
-    console.log(groupedTickets);
-    // setGroupedTickets(groupedTickets);
+    setFinalTickets(groupedTickets);
   };
   
 
   // Function to dynamically sort tickets based on the selected option
   const sortTickets = () => {
-    let sortedTickets = [...tickets];
+    let sortedTickets = [...finalTickets];
   
     if (sortOption === 'priority') {
       // Sort by priority
-      sortedTickets.sort((a, b) => b.priority - a.priority);
+      for(let i = 0; i < sortedTickets.length; i++){
+        // console.log(sortedTickets[i][1]);
+        sortedTickets[i][1].sort((a, b) => b.priority > a.priority);
+      }
+      // sortedTickets.sort((a, b) => b.priority - a.priority);
+
     } else if (sortOption === 'title') {
       // Sort by title
       sortedTickets.sort((a, b) => a.title.localeCompare(b.title));
     }
-  
+    setGroupingOption(sortedTickets);
     // Update the state or perform any other necessary actions with sortedTickets
-    console.log(sortedTickets);
+    // console.log(sortedTickets);
     // setSortedTickets(sortedTickets);
   };
   
 
-  // Call groupTickets and sortTickets whenever groupingOption or sortOption changes
   useEffect(() => {
     groupTickets();
-    sortTickets();
-  }, [groupingOption, sortOption, tickets]);
+  }, [groupingOption]);
 
+  useEffect(() => {
+    sortTickets();
+  }, [sortOption]);
+
+  useEffect(()=>{
+    console.log(finalTickets);
+    },[finalTickets])
   // Render your Kanban board based on the grouped and sorted tickets
 
   return (
