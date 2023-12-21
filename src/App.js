@@ -5,21 +5,30 @@ const App = () => {
   const [groupingOption, setGroupingOption] = useState('status');
   const [sortOption, setSortOption] = useState('priority');
   const [finalTickets, setFinalTickets] = useState([]);
+
   // Fetch tickets data from the API
   useEffect(() => {
-    fetch('https://tfyincvdrafxe7ut2ziwuhe5cm0xvsdu.lambda-url.ap-south-1.on.aws/ticketAndUsers')
-      .then(response => response.json())
-      .then(data => setTickets(data.tickets));
-  }, []);
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://tfyincvdrafxe7ut2ziwuhe5cm0xvsdu.lambda-url.ap-south-1.on.aws/ticketAndUsers');
+        const data = await response.json();
+        setTickets(data.tickets);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetchData(); // Call the async function
 
-  // Function to dynamically group tickets based on the selected option
-  const groupTickets = () => {
-    let groupedTickets = [];
+  }, []); 
   
+  const groupTickets = () => {
+
+    let groupedTickets = [];
+
     if (groupingOption === 'status') {
       // Group by status
       const statusGroups = {};
-  
+
       tickets.forEach((ticket) => {
         const status = ticket.status;
         if (!statusGroups[status]) {
@@ -27,12 +36,12 @@ const App = () => {
         }
         statusGroups[status].push(ticket);
       });
-  
-      groupedTickets = Object.entries(statusGroups); // Convert object into array of arrays
+
+      groupedTickets = Object.entries(statusGroups);
     } else if (groupingOption === 'user') {
       // Group by user
       const userGroups = {};
-  
+
       tickets.forEach((ticket) => {
         const user = ticket.userId;
         if (!userGroups[user]) {
@@ -40,12 +49,12 @@ const App = () => {
         }
         userGroups[user].push(ticket);
       });
-  
+
       groupedTickets = Object.entries(userGroups);
     } else if (groupingOption === 'priority') {
       // Group by priority
       const priorityGroups = {};
-  
+
       tickets.forEach((ticket) => {
         const priority = ticket.priority;
         if (!priorityGroups[priority]) {
@@ -53,51 +62,50 @@ const App = () => {
         }
         priorityGroups[priority].push(ticket);
       });
-  
+
+      groupedTickets = Object.entries(priorityGroups);
     }
+
     setFinalTickets(groupedTickets);
   };
-  
 
   // Function to dynamically sort tickets based on the selected option
   const sortTickets = () => {
     let sortedTickets = [...finalTickets];
-  
+
     if (sortOption === 'priority') {
       // Sort by priority
-      for(let i = 0; i < sortedTickets.length; i++){
-        // console.log(sortedTickets[i][1]);
-        sortedTickets[i][1].sort((a, b) => b.priority > a.priority);
-      }
-      // sortedTickets.sort((a, b) => b.priority - a.priority);
-
+      sortedTickets.forEach((group) => {
+        group[1].sort((a, b) => b.priority - a.priority);
+      });
     } else if (sortOption === 'title') {
       // Sort by title
-      sortedTickets.sort((a, b) => a.title.localeCompare(b.title));
+      sortedTickets.sort((a, b) => a[1][0].title.localeCompare(b[1][0].title));
     }
-    setGroupingOption(sortedTickets);
-    // Update the state or perform any other necessary actions with sortedTickets
-    // console.log(sortedTickets);
-    // setSortedTickets(sortedTickets);
+
+    setFinalTickets(sortedTickets);
   };
-  
 
   useEffect(() => {
-    groupTickets();
-  }, [groupingOption]);
+    groupTickets(groupingOption);
+    sortTickets(sortOption);
+  }, [tickets]);
 
   useEffect(() => {
-    sortTickets();
-  }, [sortOption]);
-
-  useEffect(()=>{
     console.log(finalTickets);
-    },[finalTickets])
-  // Render your Kanban board based on the grouped and sorted tickets
+  }, [finalTickets]);
+
+useEffect(() => {
+  groupTickets();
+}, [groupingOption]);
+  
+useEffect(() => {
+  sortTickets();
+}, [sortOption]);
 
   return (
     <div>
-       <div>
+      <div>
         {/* Controls for selecting grouping and sorting options */}
         <label>
           Group by:
@@ -126,10 +134,15 @@ const App = () => {
       <div>
         {/* Display your Kanban board UI */}
         {/* Example: */}
-        {tickets.map((ticket) => (
-          <div key={ticket.id}>
-            <p>{ticket.title}</p>
-            {/* Include other ticket information based on your UI design */}
+        {finalTickets.map(([group, groupTickets]) => (
+          <div key={group}>
+            <p>{group}</p>
+            {groupTickets.map((ticket) => (
+              <div key={ticket.id}>
+                <p>{ticket.title}</p>
+                {/* Include other ticket information based on your UI design */}
+              </div>
+            ))}
           </div>
         ))}
       </div>
