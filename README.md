@@ -4,9 +4,7 @@
 This project is an interactive Kanban board application built with ReactJS. It allows users to fetch and display tickets from a provided API, offering options to group and sort them based on different criteria.
 
 ## Live Demo
-
-[Live Demo](https://your-live-demo-link.com).
-
+[Live Demo](https://assignment-by-rajat.onrender.com/)
 ## Features
 
 - **Dynamic Display:** Users can click the "display" button and select from three grouping options: Status, User, and Priority.
