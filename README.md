@@ -1,5 +1,5 @@
 
-# CypherX Kanban Board
+# CypherX Assignment
 
 This project is an interactive Kanban board application built with ReactJS. It allows users to fetch and display tickets from a provided API, offering options to group and sort them based on different criteria.
 
